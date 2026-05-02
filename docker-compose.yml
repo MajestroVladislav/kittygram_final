@@ -2,12 +2,33 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:13-alpine # Используем более легковесный образ
+    db:
+    image: postgres:13-alpine
+    env_file:
+      - ./.env
+    environment:
+      # Эти переменные нужны для инициализации PostgreSQL и для healthcheck
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    healthcheck: # Добавляем проверку здоровья для БД
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s # Проверять каждые 5 секунд
+      timeout: 5s  # Таймаут для каждой проверки 5 секунд
+      retries: 5   # Повторить 5 раз, прежде чем объявить сервис нездоровым
+
+  backend:
+    build: .
     env_file:
       - ./.env
     volumes:
-      - pg_data:/var/lib/postgresql/data/
-    # restart: always # Можно добавить для автоматического перезапуска
+      - static_value:/app/static/
+      - media_value:/app/media/
+    depends_on:
+      db:
+        condition: service_healthy
 
   backend:
     build: ./backend
