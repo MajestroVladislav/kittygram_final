@@ -1,27 +1,46 @@
-version: '3'
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13-alpine # Используем более легковесный образ
+    env_file:
+      - ./.env
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    # restart: always # Можно добавить для автоматического перезапуска
+
+  backend:
+    build: ./backend
+    env_file:
+      - ./.env
+    volumes:
+      - static:/app/static/
+      - media:/app/media/
+    depends_on:
+      - db
+    # Команды для миграций и сбора статики можно добавить в entrypoint или в отдельный сервис
+    # Например, в Dockerfile можно добавить ENTRYPOINT ["/usr/local/bin/python", "manage.py", "migrate", "--noinput"]
+    # Или использовать команду в docker-compose: command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn kittygram_backend.wsgi:application --bind 0.0.0.0:8000"
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - static:/app/build/static/ # Если фронтенд генерирует статику
+    # ports: # Фронтенд обычно не нужно пробрасывать наружу, если Nginx его проксирует
+    #   - "3000:3000" # Если вы хотите напрямую обращаться к фронтенду для отладки
+
+  gateway:
+    build: ./nginx
+    volumes:
+      - static:/var/html/static/
+      - media:/var/html/media/
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend # Nginx зависит от обоих, чтобы проксировать запросы
 
 volumes:
   pg_data:
   static:
-
-services:
-  db:
-    image: postgres:13
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-  backend:
-    build: ./backend/
-    env_file: .env
-  frontend:
-    env_file: .env
-    build: ./frontend/
-    command: cp -r /app/build/. /static/
-    volumes:
-      - static:/static
-  gateway:
-    build: ./nginx/
-    env_file: .env
-    ports:
-      - 9000:80
-    volumes:
-      - static:/static
+  media:
