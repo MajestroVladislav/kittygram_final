@@ -25,8 +25,8 @@ services:
 
   frontend:
     build: ./frontend
-    volumes:
-      - static:/app/build/static/ # Если фронтенд генерирует статику
+    #volumes:
+      #- static:/app/build/static/
   
   gateway:
     build: ./nginx
