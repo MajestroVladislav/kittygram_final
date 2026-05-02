@@ -20,7 +20,7 @@ services:
       retries: 5   # Повторить 5 раз, прежде чем объявить сервис нездоровым
 
   backend:
-    build: .
+    build: ./backend
     env_file:
       - ./.env
     volumes:
@@ -29,19 +29,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-  backend:
-    build: ./backend
-    env_file:
-      - ./.env
-    volumes:
-      - static:/app/static/
-      - media:/app/media/
-    depends_on:
-      - db
-    # Команды для миграций и сбора статики можно добавить в entrypoint или в отдельный сервис
-    # Например, в Dockerfile можно добавить ENTRYPOINT ["/usr/local/bin/python", "manage.py", "migrate", "--noinput"]
-    # Или использовать команду в docker-compose: command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn kittygram_backend.wsgi:application --bind 0.0.0.0:8000"
 
   frontend:
     build: ./frontend
