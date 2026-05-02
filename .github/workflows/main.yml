@@ -36,7 +36,7 @@ jobs:
         working-directory: ./frontend
 
       - name: Run frontend tests
-        run: npm test – --watchAll=false # Запускаем тесты фронтенда
+        run: npm test -- --watchAll=false # Запускаем тесты фронтенда
         working-directory: ./frontend
 
       # Для запуска тестов бэкенда с базой данных, лучше использовать Docker Compose
