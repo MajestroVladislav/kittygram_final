@@ -42,10 +42,10 @@ jobs:
       # Для запуска тестов бэкенда с базой данных, лучше использовать Docker Compose
       - name: Build and run Docker Compose for backend tests
         run: |
-          docker-compose -f docker-compose.yml up -d db backend
+          docker compose -f docker-compose.yml up -d db backend
           sleep 10 # Даем время базе данных запуститься
-          docker-compose exec backend python manage.py migrate --noinput
-          docker-compose exec backend python manage.py test
+          docker compose exec backend python manage.py migrate --noinput
+          docker compose exec backend python manage.py test
         env:
           # Передаем переменные окружения для тестов, если они нужны
           DB_NAME: test_kittygram_db
