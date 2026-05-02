@@ -7,6 +7,11 @@ services:
       - ./.env
     volumes:
     - pg_data:/var/lib/postgresql/data/
+    healthcheck: # Добавляем проверку здоровья для БД
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s # Проверять каждые 5 секунд
+      timeout: 5s  # Таймаут для каждой проверки 5 секунд
+      retries: 5   # Повторить 5 раз, прежде чем объявить сервис нездоровым
   
   backend:
     build: ./backend
@@ -16,7 +21,8 @@ services:
       - static:/app/static/
       - media:/app/media/
     depends_on:
-      - db
+      - db:
+        condition: service_healthy
 
   frontend:
     build: ./frontend
